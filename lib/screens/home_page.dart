@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:netiflutterapp/api/test_api.dart';
-import 'package:netiflutterapp/model/reponse_model.dart';
+import 'package:netiflutterapp/model/response_model.dart';
 
 class HomePage extends StatefulWidget {
   @override

@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:netiflutterapp/model/reponse_model.dart';
+import 'package:netiflutterapp/model/response_model.dart';
 
 class TestAPI {
   Dio dio = Dio();
