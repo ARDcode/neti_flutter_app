@@ -4,6 +4,8 @@
 
 import 'dart:convert';
 
+import 'package:mobx/mobx.dart';
+
 ResponseModel authDataFromJson(String str) =>
     ResponseModel.fromJson(json.decode(str));
 
@@ -16,13 +18,14 @@ class ResponseModel {
   });
 
   Info info;
-  List<Result> results = [];
+  ObservableList<Result> results = ObservableList();
 
   factory ResponseModel.fromJson(Map<String, dynamic> json) => ResponseModel(
         info: json["info"] == null ? null : Info.fromJson(json["info"]),
         results: json["results"] == null
             ? null
-            : List<Result>.from(json["results"].map((x) => Result.fromJson(x))),
+            : ObservableList.of(List<Result>.from(
+                json["results"].map((x) => Result.fromJson(x)))),
       );
 
   Map<String, dynamic> toJson() => {

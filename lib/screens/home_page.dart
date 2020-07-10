@@ -1,7 +1,11 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:netiflutterapp/api/test_api.dart';
 import 'package:netiflutterapp/model/response_model.dart';
 import 'package:netiflutterapp/screens/person_page.dart';
+import 'package:netiflutterapp/store/global_store.dart';
+import 'package:netiflutterapp/store/my_store.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -9,25 +13,17 @@ class HomePage extends StatefulWidget {
 }
 
 class HomePageState extends State<HomePage> {
-  TestAPI _testAPI = TestAPI();
-  ResponseModel _data = ResponseModel();
+  MyStore myStore = GlobalStore().myStore;
   int _currentIndex = 0;
   @override
   void initState() {
     super.initState();
-    getData();
-  }
-
-  Future<void> getData() async {
-    ResponseModel response = await _testAPI.getData();
-    setState(() {
-      _data = response;
-    });
-    print(_data.results.length);
+    myStore.getData();
   }
 
   @override
   Widget build(BuildContext context) {
+    print('render');
     return Scaffold(
       appBar: AppBar(
         title: Text('AppBar'),
@@ -48,14 +44,7 @@ class HomePageState extends State<HomePage> {
       floatingActionButtonLocation:
           FloatingActionButtonLocation.miniCenterDocked,
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          showModalBottomSheet(
-              context: context,
-              isScrollControlled: true,
-              builder: (context) {
-                return Content();
-              });
-        },
+        onPressed: myStore.test,
         child: Text('GO'),
       ),
       bottomNavigationBar: BottomNavigationBar(
@@ -86,35 +75,47 @@ class HomePageState extends State<HomePage> {
               backgroundColor: Colors.black)
         ],
       ),
-      body: IndexedStack(
-        children: [
-          ListView.builder(
-            itemBuilder: (context, index) {
-              Result item = _data.results[index];
-              return ListTile(
-                onTap: () {
-                  Navigator.of(context, rootNavigator: true).push(
-                    MaterialPageRoute(
-                      builder: (context) => PersonPage(
-                        person: item,
-                      ),
-                    ),
-                  );
-                },
-                leading: Hero(
-                    child: Image.network(item.image), tag: item.id.toString()),
-                title: Text(item.name, style: TextStyle(color: Colors.black)),
-                subtitle: Text(item.type),
-              );
-            },
-            itemCount: _data.results != null ? _data.results.length : 0,
-          ),
-          Container(
-            child: Text('second Tab'),
-          )
-        ],
-        index: _currentIndex,
-      ),
+      body: Observer(builder: (context) {
+        print('render');
+        return IndexedStack(
+          children: [
+            myStore.data.results == null
+                ? Center(child: CupertinoActivityIndicator())
+                : ListView.builder(
+                    itemBuilder: (context, index) {
+                      return Observer(builder: (context) {
+                        Result item = myStore.data.results[index];
+                        return ListTile(
+                          onTap: () {
+                            Navigator.of(context, rootNavigator: true).push(
+                              MaterialPageRoute(
+                                builder: (context) => PersonPage(
+                                  person: item,
+                                ),
+                              ),
+                            );
+                          },
+                          leading: Hero(
+                              child: Image.network(item.image),
+                              tag: item.id.toString()),
+                          title: Text(
+                              GlobalStore().myStore.data.results[index].name,
+                              style: TextStyle(color: Colors.black)),
+                          subtitle: Text(item.type),
+                        );
+                      });
+                    },
+                    itemCount: myStore.data.results != null
+                        ? myStore.data.results.length
+                        : 0,
+                  ),
+            Container(
+              child: Text('second Tab'),
+            )
+          ],
+          index: _currentIndex,
+        );
+      }),
     );
   }
 }
